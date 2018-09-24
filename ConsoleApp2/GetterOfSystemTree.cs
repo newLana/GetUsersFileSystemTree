@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp2
+namespace FSTree
 {
     class GetterOfSystemTree
     {
@@ -13,7 +13,6 @@ namespace ConsoleApp2
         public string ResFileName => Path.GetFileName(usersDesktopPath);
 
         private string usersDesktopPath;
-        private string tree;
         private StringBuilder sb;
 
         public GetterOfSystemTree(string symbol)
@@ -21,7 +20,6 @@ namespace ConsoleApp2
             usersDesktopPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Environment.UserName + "Docs.txt");
             sb = new StringBuilder();
             GetTree(new DirectoryInfo(UsersDocsPath), sb, symbol);
-            tree = sb.ToString();
         }       
 
         private void GetTree(DirectoryInfo directoryInfo, StringBuilder sb, string shift)
@@ -47,13 +45,13 @@ namespace ConsoleApp2
         public bool WriteTree()
         {
             bool isWrited = false;
-            if(!string.IsNullOrEmpty(tree))
+            if(sb != null)
             {                
                 using (StreamWriter fi = new StreamWriter(usersDesktopPath, false, Encoding.Default))
                 {
                     if (!File.Exists(usersDesktopPath))
                         File.Create(usersDesktopPath);
-                    fi.Write(tree);
+                    fi.Write(sb.ToString());
                 }
                 isWrited = true;
             }

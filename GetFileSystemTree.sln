@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp2", "ConsoleApp2\ConsoleApp2.csproj", "{2DD3DE10-E04B-45B1-8AAC-48E2D4ACB7FE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSTree", "ConsoleApp2\FSTree.csproj", "{2DD3DE10-E04B-45B1-8AAC-48E2D4ACB7FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
