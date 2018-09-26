@@ -10,11 +10,14 @@ namespace FSTree
             try
             { 
                 Console.WriteLine("Введите символ разделителя");
-                var symbol = Console.ReadLine()[0].ToString();
+                var symbol = Console.ReadLine();
                 var treeGetter = new GetterOfSystemTree(symbol);
-            
-                if(treeGetter.WriteTree())
+
+                if (treeGetter.WriteAndCompressTree())
                     Console.WriteLine($"Дерево успешно записано в файл {treeGetter.ResFileName} на рабочем столе.");
+                if (treeGetter.DecompressTreeFile())
+                    Console.WriteLine($"Файл успешно разархивирован.");
+                Console.WriteLine();
             }
             catch(IOException e)
             {

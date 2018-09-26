@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.IO.Compression;
 
 namespace FSTree
 {
@@ -14,48 +13,72 @@ namespace FSTree
 
         private string usersDesktopPath;
         private StringBuilder sb;
+        private char symbol;
 
         public GetterOfSystemTree(string symbol)
         {
-            usersDesktopPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Environment.UserName + "Docs.txt");
+            usersDesktopPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Environment.UserName + "Docs.gz");
             sb = new StringBuilder();
-            GetTree(new DirectoryInfo(UsersDocsPath), sb, symbol);
-        }       
+            this.symbol = string.IsNullOrEmpty(symbol)?' ':symbol[0];
+            GetTree(new DirectoryInfo(UsersDocsPath));
+        }
 
-        private void GetTree(DirectoryInfo directoryInfo, StringBuilder sb, string shift)
+        private bool GetTree(DirectoryInfo directoryInfo)
         {
-            if(directoryInfo != null)
+            bool flag = false;
+            int shift = directoryInfo.FullName.Remove(0, UsersDocsPath.Length).Count(c => c == '\\');
+            sb.AppendLine(new string(symbol, shift) + directoryInfo.Name);
+            foreach (var directory in directoryInfo.EnumerateDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.ReparsePoint)))
             {
-                var checkTime = DateTime.Now.Subtract(new TimeSpan(15, 0, 0, 0));
-                var allFileSystemInfos = directoryInfo.EnumerateFileSystemInfos().Where(f => (!f.Attributes.HasFlag(FileAttributes.ReparsePoint)) && (f.CreationTime < checkTime));
-                if (allFileSystemInfos != null)
+                flag = GetTree(directory);
+            }
+            foreach (var file in directoryInfo.EnumerateFiles().Where(f => (!f.Attributes.HasFlag(FileAttributes.ReparsePoint)) && (f.CreationTimeUtc < DateTime.Now.ToUniversalTime().Subtract(new TimeSpan(15, 0, 0, 0)))))
+            {
+                sb.AppendLine(new string(symbol, shift + 1) + file.Name);
+                flag = true;
+            }              
+            if(flag != true)
+            { 
+                var index = sb.ToString().TrimEnd(new char[] { '\n', '\r' }).LastIndexOf(Environment.NewLine);
+                sb.Remove(index + 1, sb.Length - index - 2);
+            }
+            return flag;
+        }
+
+        public bool WriteAndCompressTree()
+        {
+            if(sb != null)
+            {
+                using (var mw = new MemoryStream(Encoding.Default.GetBytes(sb.ToString())))
                 {
-                    foreach (var item in allFileSystemInfos)
+                    using (var fi = File.OpenWrite(usersDesktopPath))
                     {
-                        sb.Append(shift+item.Name + Environment.NewLine);
-                        if(item is DirectoryInfo)
+                        using (var compressionStream = new GZipStream(fi, CompressionMode.Compress))
                         {
-                            GetTree(item as DirectoryInfo, sb, shift + shift[0]);
+                            mw.CopyTo(compressionStream);
                         }
+                    }
+                }                    
+                return true;
+            }
+            return false;
+        }
+
+        public bool DecompressTreeFile()
+        {
+            if (!File.Exists(usersDesktopPath))
+                return false;
+            using (var sourceStream = new FileStream(usersDesktopPath, FileMode.Open))
+            {
+                using (var targetStream = File.OpenWrite(Path.ChangeExtension(usersDesktopPath, "txt")))
+                {
+                    using (var decompressionStream = new GZipStream(sourceStream, CompressionMode.Decompress))
+                    {
+                        decompressionStream.CopyTo(targetStream);
+                        return true;
                     }
                 }
             }
-        }
-
-        public bool WriteTree()
-        {
-            bool isWrited = false;
-            if(sb != null)
-            {                
-                using (StreamWriter fi = new StreamWriter(usersDesktopPath, false, Encoding.Default))
-                {
-                    if (!File.Exists(usersDesktopPath))
-                        File.Create(usersDesktopPath);
-                    fi.Write(sb.ToString());
-                }
-                isWrited = true;
-            }
-            return isWrited;
         }
     }
 }
