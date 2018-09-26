@@ -14,6 +14,7 @@ namespace FSTree
         private string usersDesktopPath;
         private StringBuilder sb;
         private char symbol;
+        private int shift = 0;
 
         public GetterOfSystemTree(string symbol)
         {
@@ -26,15 +27,14 @@ namespace FSTree
         private bool GetTree(DirectoryInfo directoryInfo)
         {
             bool flag = false;
-            int shift = directoryInfo.FullName.Remove(0, UsersDocsPath.Length).Count(c => c == '\\');
-            sb.AppendLine(new string(symbol, shift) + directoryInfo.Name);
+            sb.AppendLine(new string(symbol, shift++) + directoryInfo.Name);
             foreach (var directory in directoryInfo.EnumerateDirectories().Where(d => !d.Attributes.HasFlag(FileAttributes.ReparsePoint)))
             {
                 flag = GetTree(directory);
             }
             foreach (var file in directoryInfo.EnumerateFiles().Where(f => (!f.Attributes.HasFlag(FileAttributes.ReparsePoint)) && (f.CreationTimeUtc < DateTime.Now.ToUniversalTime().Subtract(new TimeSpan(15, 0, 0, 0)))))
             {
-                sb.AppendLine(new string(symbol, shift + 1) + file.Name);
+                sb.AppendLine(new string(symbol, shift) + file.Name);
                 flag = true;
             }              
             if(flag != true)
@@ -42,6 +42,7 @@ namespace FSTree
                 var index = sb.ToString().TrimEnd(new char[] { '\n', '\r' }).LastIndexOf(Environment.NewLine);
                 sb.Remove(index + 1, sb.Length - index - 2);
             }
+            shift--;
             return flag;
         }
 

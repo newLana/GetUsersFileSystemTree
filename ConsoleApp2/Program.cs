@@ -17,7 +17,6 @@ namespace FSTree
                     Console.WriteLine($"Дерево успешно записано в файл {treeGetter.ResFileName} на рабочем столе.");
                 if (treeGetter.DecompressTreeFile())
                     Console.WriteLine($"Файл успешно разархивирован.");
-                Console.WriteLine();
             }
             catch(IOException e)
             {
